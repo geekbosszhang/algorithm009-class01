@@ -1,0 +1,50 @@
+/*It("should render correctly when there is plugin", func() {
+			p := PluginParams{}
+			rowData := map[string]interface{}{
+				"Name": "test",
+				"Pages": []plugin.PageConfig{
+					{
+						"test_url",
+						"page_id",
+						"fake layout",
+						"fake action",
+					},
+				},
+			}
+			rows := []map[string]interface{}{
+				{
+					"test": rowData,
+				},
+			}
+
+			result := p.Render(rows)
+			Expect(result).NotTo(BeNil())
+			ret := result.(PluginRender)
+
+			Expect(ret.Plugin["test"].(plugin.ConfigForPlugin).Pages[0].URL).To(Equal("test_url"))
+			Expect(ret.Plugin["test"].(plugin.ConfigForPlugin).Pages[0].PageID).To(Equal("page_id"))
+			Expect(ret.Plugin["test"].(plugin.ConfigForPlugin).Pages[0].Layout).To(Equal("fake layout"))
+			Expect(ret.Plugin["test"].(plugin.ConfigForPlugin).Pages[0].Actions).To(Equal("fake action"))
+		})*/
+
+
+    /*func (p *PluginParams) Entry(u *User) (rows []map[string]interface{}, err error) {
+	ar, err := NewCCActiveRecord()
+	if err != nil {
+		beego.Error(err)
+	}
+	return plugin.GetPluginConfig(ar)
+}
+
+// Render render api result
+func (p *PluginParams) Render(rows []map[string]interface{}) interface{} {
+	result := PluginRender{
+		Plugin: map[string]interface{}{},
+	}
+	for _, r := range rows {
+		for k, v := range r {
+			result.Plugin[k] = v
+		}
+	}
+	return result
+}*/
