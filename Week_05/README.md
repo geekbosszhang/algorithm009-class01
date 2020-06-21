@@ -722,6 +722,269 @@ func preTraverse(root *Node, res *[]int) {
 }
 ```
   
+ 15. Generate parentheses
+ 
+ 思路是左括号没有达到限制就添加左括号，左括号数量大于右括号就添加右括号，左右两边括号数量都达到限制代表终止i
+ ```
+ func generateParenthesis(n int) []string {
+    result = []string{}
+    _generateParenthesis(0, 0, n, "")
+    return result
+}
+
+func _generateParenthesis(left int, right int, n int, s string) {
+    if left == n && right == n {
+        result = append(result, s)
+    }
+    if left < n {
+        _generateParenthesis(left + 1, right, n, s + "(")
+    }
+    if left > right {
+        _generateParenthesis(left, right + 1, n, s + ")")
+    }
+}
+ ```
+ 16. Number of islands
+ 
+ Need rethink
+ ```
+ func numIslands(grid [][]byte) int {
+    nr := len(grid)
+    if nr < 1 {
+        return 0
+    }
+    nc := len(grid[0])
+
+    var count = 0
+    for i := 0; i < nr; i++ {
+        for j := 0; j < nc; j++ {
+            if grid[i][j] == '1' {
+                dfs(grid, i, j)
+                count++
+            }
+        }
+    }
+    return count
+}
+
+func dfs(grid [][]byte, i int, j int) {
+    for i < 0 || j < 0 || i >= len(grid) || j >= len(grid[0]) || grid[i][j] != '1' {
+        return
+    }
+    grid[i][j] = '0'
+    dfs(grid, i+1, j)
+    dfs(grid, i - 1, j)
+    dfs(grid, i, j+1)
+    dfs(grid, i, j -1)
+}
+```
+ 
+ 17. Minimun Genetic Mutation
+ 
+ ```
+ func minMutation(start string, end string, bank []string) int {
+    if indexOf(end, bank) == -1 {
+        return -1
+    }
+    queue := []string{start}
+    isUsed := make([]bool, len(bank))
+    count := 0
+
+    for len(queue) > 0 {
+        l := len(queue)
+        for i := 0; i < l; i++ {
+            cur := queue[i]
+            if cur == end {
+                return count
+            }
+            for j := 0; j < len(cur); j++ {
+                for _, s := range mutationMap[cur[j]] {
+                    if idx := indexOf(cur[:j]+s+cur[j+1:], bank); idx != -1 && !isUsed[idx] {
+                        queue = append(queue, bank[idx])
+                        isUsed[idx]=true
+                    }
+                }
+            }
+        }
+        count++
+        queue = queue[1:]
+    }
+    return -1
+}
+ ```
+ 
+ 18. word ladder
+ 
+ 思路的核心是BFS
+ 使用queue，讲start word入队，循环check queue是否为空，队列不为空则出队，对出队的单词进行每个字母从a-z的字符转换，将新单词在列表中进行比较，如果找到end word，则 返回level+1, 如果在词典中，将新单词放入queue中 并将词典单词移除，避免重复处理
+ 
+ 19. Pow(x, n)
+ 
+ 思路是 不断分一半，终止条件为n二分为0， 同时要考虑n为负数 
+ ```
+ func myPow(x float64, n int) float64 {
+    if n >= 0 {
+        return quickPow(x, n)
+    }
+    return 1.0 / quickPow(x, -n)
+
+}
+
+func quickPow(x float64, n int) float64{
+    if n == 0 {
+        return 1
+    }
+    y := quickPow(x, n / 2)
+    if n % 2 == 0 {
+        return y * y
+    }
+    return y * y * x
+}
+ ```
+ 20. Majority Element
+ 
+ 思路： 可以通过hashMap或者一遍排序，然后输出 nums[len/2]
+ 
+ 21. letter combinations of a phone number
+ 
+ ```
+ func letterCombinations(digits string) []string {
+    numberMap := map[byte]string{
+        '2': "abc",
+        '3': "def",
+        '4': "ghi",
+        '5': "jkl",
+        '6': "mno",
+        '7': "pqrs",
+        '8': "tuv",
+        '9': "wxyz",
+    }
+    res := []string{}
+    if digits == "" {
+        return res
+    }
+    backTrace("", digits, 0, &res, numberMap)
+    return res
+}
+
+func backTrace(s string, digits string, i int, res *[]string, numberMap map[byte]string) {
+    value := numberMap[digits[i]]
+	if i == len(digits)-1 {
+		for _, v := range value {
+			*res = append(*res, s + string(v))
+		}
+		return
+	}
+	for _, v := range value {
+		backTrace(s + string(v), digits, i+1, res, numberMap)
+	}
+
+}
+ ```
+ 22. Permutations
+ 
+ 思路： 遍历数组的所有元素，不断drill down到nums.length层，每一层的结果 遇到已在state的元素需要skip, used数组来判重
+ 以下解法可以优化，通过传地址的方式，也可以track不用清空
+ ```
+ var res [][]int
+func permute(nums []int) [][]int {
+    res = [][]int{}
+    track := []int{}
+    used := make([]bool, len(nums))
+    backstrace(nums, track, used)
+    return res
+}
+
+func backstrace(nums []int, track []int, used []bool) {
+    if len(track) == len(nums) {
+        //排列结束, 此处一定要copy slice之后再放入结果集！！!
+        tmp := make([]int, len(nums))
+        copy(tmp, track)
+        res = append(res, tmp)
+        return
+    }
+    for i:=0 ; i< len(nums); i++ {
+        if !used[i]{
+            used[i] = true
+            track = append(track,nums[i])
+            backstrace(nums, track, used)
+            track = track[:len(track)-1]
+            used[i] = false
+        }
+
+    }
+}
+ ```
+ 23. Combinations
+ 
+ 思路：DFS从1到N，排列组合优先DFS
+ 
+ ```
+ func combine(n int, k int) [][]int {
+    ans := [][]int{}
+    arr := []int{}
+    dfs(1, n, k, arr, &ans)
+    return ans
+}
+
+func dfs(s, n, k int, cur []int, ans *[][]int) {
+    if k < 0 { return }
+    if k == 0 { *ans = append(*ans, append([]int{}, cur...)); return }
+    for i := s; i <= n; i++ {
+        dfs(i + 1, n, k - 1, append(cur, i), ans)
+    }
+}
+ ```
+ 24. subset
+ 
+ 对当前层可选可不选，然后进入下一层
+ ```
+ func subsets(nums []int) [][]int {
+   res := make([][]int, 0)
+   solve(0, nums, nil, &res)
+   return res
+}
+
+func solve(index int, nums []int, cur []int, res *[][]int) {
+    if index == len(nums) {
+        *res = append(*res, append([]int{}, cur...))
+        return
+    }
+    solve(index+1, nums, cur,  res)
+    solve(index+1, nums, append(cur, nums[index]), res)
+}
+ ```
+ 25. N queens
+ 
+ TODO 
+ 
+ *Hash*
+ 
+ 1. Two sum
+ 2. 异位词
+ 
+ *Stack*
+ 1. valid parentheses
+ 2. min stack
+ 3. trapping rain water
+ 4. largest rectangles in histogram
+ 
+ *Queue*
+ 1. Sliding window Maximum
+ 2. 循环队列
+ 
+ *Array*
+ 1. Two sum
+ 2. Three sum
+ 3. Remove duplicates from sorted array
+ 4. Merge sorted array
+ 5. 移动0到数组最后
+ 6. Intersection of two arrays
+ 7. 装水最多的水桶
+ 8. Plus one
+ 9. Rotate Array
+ 10. Matrix
+ 
   
   
   
