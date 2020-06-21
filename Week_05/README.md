@@ -246,3 +246,499 @@ https://leetcode-cn.com/problems/liang-ge-lian-biao-de-di-yi-ge-gong-gong-jie-di
 
 *递归 && DFS && BFS && 分治*
 
+1. 爬楼梯问题
+   
+   动态规划
+ ```
+   dp := make([]int, n+1)
+   dp[1] = 1
+   dp[2] = 2
+   for i := 3; i <= n ; i++ {
+      dp[i] = dp[i-1] + dp[i-2]
+   }
+   return dp[n]
+```
+2. Invert Binary Tree
+  思路： 如果当前节点为空，则终止， 建立一个temp, 交换左右节点，左右节点各自继续作为新的根节点进行子节点的左右交换
+  ```
+   func invertTree(root *TreeNode) *TreeNode {
+     if root == nil {
+         return nil
+     }
+     root.Left, root.Right = root.Right, root.Left
+     invertTree(root.Left)
+     invertTree(root.Right)
+     return root
+ }
+  ```
+  
+3. validate binary search Tree
+  
+  思路一：递归检查当前元素是否在上下界中
+   ```
+   func isValidBST(root *TreeNode) bool {
+	   return helper(root, math.MinInt64, math.MaxInt64)
+   }
+
+   func helper(root *TreeNode, low int, high int) bool {
+      if root == nil {
+         return true
+      }
+      if root.Val <= low || root.Val >= high {
+         return false
+      }
+      return helper(root.Left, low, root.Val) && helper(root.Right, root.Val, high)
+   }
+   
+   ```
+
+  思路2：中序遍历，比较上一个元素与当前元素，二叉搜索树的中序遍历应该会有一个有序的
+  
+  ```
+  func isValidBST(root *TreeNode) bool {
+    stack := []*TreeNode{}
+	inOrder := math.MinInt64
+	for len(stack) > 0 || root != nil {
+		for root != nil {
+			stack = append(stack, root)
+			root = root.Left
+		}
+		root = stack[len(stack)-1]
+		if root.Val <= inOrder {
+			return false
+		}
+		inOrder = root.Val
+		stack = stack[:len(stack)-1]
+		root = root.Right
+	}
+	return true
+}
+  ```
+  
+ 3. Binary Tree Preorder Traversal
+ 
+ 思路一: 用递归
+ ```
+ func preorderTraversal(root *TreeNode) []int {
+    res := make([]int, 0)
+    preorder(root, &res)
+    return res
+}
+
+func preorder(root *TreeNode, res *[]int) {
+    if root == nil {
+        return
+    }
+    *res = append(*res, root.Val)
+    preorder(root.Left, res)
+    preorder(root.Right, res)
+}
+```
+ 
+ 思路二: 用栈实现
+ 
+ ```
+ func preorderTraversal(root *TreeNode) []int {
+	 if root == nil {
+		 return nil
+	 }
+	 stack := []*TreeNode{}
+	 res := []int{}
+	 stack = append(stack, root)
+	 for len(stack) > 0 {
+		 p := stack[len(stack) - 1]
+		 res = append(res, p.Val)
+		 stack = stack[:len(stack)-1]
+		 if p.Right != nil {
+			 stack = append(stack, p.Right)
+		 }
+		 if p.Left != nil {
+			 stack = append(stack, p.Left)
+		 }
+	 }
+	 return res
+ }
+ ```
+ 
+ 4. Binary Tree Inorder Traversal
+ 
+ 思路一： 用递归
+ ```
+  func inorderTraversal(root *TreeNode) []int {
+    res := make([]int, 0)
+    inorder(root, &res)
+    return res
+ }
+
+func inorder(root *TreeNode, res *[]int) {
+    if root == nil {
+        return
+    }
+    inorder(root.Left, res)
+    *res = append(*res, root.Val)
+    inorder(root.Right, res)
+}
+```
+ 
+ 思路二： 用栈
+ 
+ ```
+ func inorderTraversal(root *TreeNode) (res []int) {
+    stack := []*TreeNode{}
+    cur := root
+    for len(stack) > 0 || cur != nil {
+        for cur != nil {
+            stack = append(stack, cur)
+            cur = cur.Left
+        }
+        // pop out one element
+        cur = stack[len(stack)-1]
+        stack = stack[:len(stack)-1]
+        res = append(res, cur.Val)
+        // turn the direction
+        cur = cur.Right
+    }
+    return
+}
+```
+ 
+ 5. Binary Tree PostOrdeer Traveral
+ 
+ 思路一： 用递归
+ 
+ ```
+ func postorderTraversal(root *TreeNode) []int {
+    res := make([]int, 0)
+    postorder(root, &res)
+    return res
+}
+
+func postorder(root *TreeNode, res *[]int) {
+    if root == nil {
+        return
+    }
+    postorder(root.Left, res)
+    postorder(root.Right, res)
+    *res = append(*res, root.Val)
+}
+
+```
+ 
+ 思路二： 用递归实现，困难点在于根节点需要优先于左右孩子进栈，因此需要借助一个reverse的栈，根->右->左
+ 
+ ```
+ func postorderTraversal(root *TreeNode) (res []int) {
+    if root == nil {
+        return
+    }
+    stack := []*TreeNode{}
+    stackForReverse := []int{}
+    stack = append(stack, root)
+    for len(stack) > 0 {
+        top := stack[len(stack)-1]
+        stackForReverse = append(stackForReverse, top.Val)
+        stack = stack[:len(stack)-1]
+        if top.Left != nil {
+            stack = append(stack, top.Left)
+        }
+        if top.Right != nil {
+            stack = append(stack, top.Right)
+        }
+    }
+    //Reverse the stackForReverse, which is parent > right > left
+    for i := len(stackForReverse)-1; i >= 0; i-- {
+        res = append(res, stackForReverse[i])
+    }
+    return res
+}
+```
+ 6. Binary Tree level Traversal
+ 
+ 思路： 逐层处理当前节点，借助辅助queue来方便操作先来后到的子层级
+ ```
+ func levelOrder(root *TreeNode) [][]int {
+    if root == nil {
+        return nil
+    }
+    var res [][]int
+    queue := []*TreeNode{root}
+    for i := 0; len(queue) > 0; i++ {
+        res = append(res, []int{})
+        p := []*TreeNode{}
+        for j := 0; j < len(queue); j++ {
+            node := queue[j]
+            res[i] = append(res[i], node.Val)
+            if node.Left != nil {
+                p = append(p, node.Left)
+            }
+            if node.Right != nil {
+                p = append(p, node.Right)
+            }
+        }
+        queue = p
+    }
+    return res
+}
+```
+ 7. N-ary Tree Level Order Traversal
+ 
+ 思路： 同6， 借助辅助queue
+ ```
+ func levelOrder(root *Node) (result [][]int) {
+    if root == nil {
+        return
+    }
+    queue := []*Node{}
+    queue = append(queue, root)
+    var level int
+    for len(queue) > 0 {
+        counter := len(queue)
+        result = append(result, []int{})
+        for i := 0; i < counter; i++ {
+            if queue[i] != nil {
+                result[level] = append(result[level], queue[i].Val)
+                for _, v := range queue[i].Children {
+                    queue = append(queue, v)
+                }
+            }      
+        }
+        queue = queue[counter:]
+        level++
+    }
+    return result
+}
+ ```
+ 8. N-ary Tree Postorder Traversal
+ 
+ 思路一： 递归
+ ```
+ func postorder(root *Node) []int {
+    res := make([]int, 0)
+    post(root, &res)
+    return res
+}
+
+func post(root *Node, res *[]int) {
+    if root == nil {
+        return
+    }
+    for _, v := range root.Children {
+        post(v, res)
+    }
+    *res = append(*res, root.Val)
+}
+ ```
+ 思路二： 迭代法，借助栈和reverse stack Need to rethink the steps
+ ```
+ func postorder(root *Node) (res []int) {
+    if root == nil {
+        return nil
+    }
+    stack := []*Node{}
+    stackReverse := []int{}
+    stack = append(stack, root)
+    for len(stack) > 0 {
+        p := stack[len(stack)-1]
+        if p.Children != nil {
+            stack = stack[:len(stack)-1]
+        }
+        stackReverse = append(stackReverse, p.Val)
+        for i:= 0; i < len(p.Children);  i++ {
+            stack = append(stack, p.Children[i])
+        }
+    }
+    for i:= len(stackReverse)-1; i>=0; i-- {
+        res = append(res, stackReverse[i])
+    }
+    return res
+}
+ ```
+ 9. N-ary Tree Preorder Traversal
+ 
+ 思路一： 迭代法
+ ```
+ func preorder(root *Node) []int {
+    if root == nil {
+		return nil
+	}
+	stack := []*Node{}
+	res := []int{}
+	stack = append(stack, root)
+	for len(stack) > 0 {
+		p := stack[len(stack) - 1]
+		res = append(res, p.Val)
+		stack = stack[:len(stack) - 1]
+		for i:= len(p.Children) - 1; i >= 0; i-- {
+			stack = append(stack, p.Children[i])
+		}
+	}
+	return res
+}
+```
+
+思路二：递归
+```
+func preorder(root *Node) []int {
+    res := make([]int, 0)
+    preTraverse(root, &res)
+    return res
+}
+
+func preTraverse(root *Node, res *[]int) {
+    if root == nil {
+        return
+    }
+    *res = append(*res, root.Val)
+    for _, v :=range root.Children {
+        preTraverse(v, res)
+    }
+}
+```
+ 10. Maximum Depth of Binary Tree
+ 
+ 思路： max(left, right) + 1
+ 
+ ```
+ func maxDepth(root *TreeNode) int {
+    if root == nil {
+		return 0
+	}
+	depth := 1
+	leftHeight := maxDepth(root.Left)
+	rightHeight := maxDepth(root.Right)
+	if leftHeight > rightHeight {
+		depth = leftHeight + 1
+	} else {
+        depth = rightHeight + 1
+    }
+	return depth
+}
+ ```
+ 11. Minimun Depth of Binary Tree
+ 
+ 思路： 比较左右子树谁小，要考虑如果树没有或者只有一个节点
+ if left == 0 || right == 0 return left + right + 1
+ 
+ ```
+ func minDepth(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    if root.Left == nil && root.Right == nil {
+        return 1
+    }
+    depth := math.MaxInt64
+    if root.Left != nil {
+        depth = min(minDepth(root.Left), depth)
+    }
+    if root.Right != nil {
+        depth = min(minDepth(root.Right), depth)
+    }
+    return depth+1
+}
+ ```
+ 12. Lowest Common Ancestor
+ 
+ 思路一： 如果当前节点已找到或者为nil, 返回给上一层
+ 查看左边的节点
+ 查看右边的节点
+ 如果左右两边都找到了节点，返回
+ 说明当前节点就是他们的公共祖先，否则返回左或者右节点（谁不为Null返回谁）
+ ```
+ func lowestCommonAncestor(root, p, q *TreeNode) *TreeNode {
+     if root == nil {
+         return nil
+     }
+     if root.Val == p.Val || root.Val == q.Val {
+         return root
+     }
+     // terminater if root subtree contains p and q, and p and q not in the same subtree, return root
+     left := lowestCommonAncestor(root.Left, p, q)
+     right := lowestCommonAncestor(root.Right, p, q)
+     if left != nil && right != nil {
+         return root
+     }
+     if left == nil {
+         return right
+     }
+    return left
+}
+ ```
+ 13. Construct Binary Tree from Preorder and Inorder Traversal
+ 
+ 思路： preorder 找根节点，inorder找到跟及诶点的位置，根节点左边为Left，右边为right
+ 
+ ```
+ func buildTree(preorder []int, inorder []int) *TreeNode {
+    if len(preorder) < 1 {
+        return nil
+    }
+    root := &TreeNode {
+        Val: preorder[0],
+        Left: nil,
+        Right: nil,
+    }
+    var rootIndex int
+    // Find the root index in inorder and seperate left tree and right tree
+    for i, v := range inorder {
+        if v == root.Val {
+            rootIndex = i
+            break
+        }
+    }
+    root.Left = buildTree(preorder[1:len(inorder[:rootIndex])+1], inorder[:rootIndex])
+    root.Right = buildTree(preorder[len(inorder[:rootIndex])+1:], inorder[rootIndex+1:])
+    return root
+}
+ ```
+ 14. Find Largest Value in each Tree row
+ 
+ 思路 参考题6， 二叉树的按层遍历
+ ```
+ func largestValues(root *TreeNode) (res []int) {
+    if root == nil {
+        return nil
+    }
+    queue := []*TreeNode{root}
+    for i := 0 ; len(queue) > 0; i++ {
+        max := math.MinInt32
+        q := []*TreeNode{}
+        for j := 0; j < len(queue); j++ {
+            node := queue[j]
+            if node.Val > max {
+                max = node.Val
+            }
+            if node.Left != nil {
+                q = append(q, node.Left)
+            }
+            if node.Right != nil {
+                q = append(q, node.Right)
+            }
+        }
+        queue = q
+        res = append(res, max)
+    }
+    return res
+}
+```
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
