@@ -42,12 +42,13 @@
 3. 两两交换链表
    思路：head -> 1 -> 2 -> 3 -> 4
    p - head, cur - 1,
-   step 1. p.next = cur.next  (head -> 2)
-   step 2. cur.next = cur.next.next (1 -> 3)
-   step 3. p.next.next = cur (2 -> 1)
-   step 4. p = cur
-   step 5. cur = cur.next
-   ```
+   * step 1. p.next = cur.next  (head -> 2)
+   * step 2. cur.next = cur.next.next (1 -> 3)
+   * step 3. p.next.next = cur (2 -> 1)
+   * step 4. p = cur
+   * step 5. cur = cur.next
+   
+```
    func swapPairs(head *ListNode) *ListNode {
     if head == nil || head.Next == nil {
         return head
@@ -66,13 +67,14 @@
     return tmp.Next
 
 }
-   ```
+```
 
-   思路2：用递归
-   // 1 -> 2 -> 3 -> 4
-   // 2 -> 1 -> 4 -> 3
-   // (2 tail) -> (1 head) -> swapPairs(3 -> 4)
-   // rturn tail
+ 思路2：用递归
+   * // 1 -> 2 -> 3 -> 4
+   * // 2 -> 1 -> 4 -> 3
+   * // (2 tail) -> (1 head) -> swapPairs(3 -> 4)
+   * // rturn tail
+
    ```
    func swapPairs(head *ListNode) *ListNode {
     if head == nil || head.Next == nil {
@@ -84,6 +86,7 @@
     return tail
 }
    ```
+
 4. K个一组反转链表
    思路： Dummy node
    prev = dummy k=3
@@ -92,11 +95,15 @@
    tail - 1 cur - 2 next -3
 
    fist iteration (2->1->3)
+   
+   ```
    cur.Next = prev.Next (2->1)
    prev.Next = cur (d->2)
    tail.Next = next (1->3)
    cur = next
    ```
+   
+```
    func reverseKGroup(head *ListNode, k int) *ListNode {
     if head == nil {
         return nil
@@ -112,29 +119,30 @@
     return dummy.Next
 }
 
-func reverse(prev *ListNode, k int) *ListNode{
-    last := prev
-    for i := 0; i < k + 1; i++ {
-        last = last.Next
-        if i != k && last == nil {
-            return nil
-        }
-    }
-    tail := prev.Next
-    cur := prev.Next.Next
-    for (cur != last) {
-        next := cur.Next
-        cur.Next = prev.Next
-        prev.Next = cur
-        tail.Next = next
-        cur = next
-    }
-    return tail
-}
+   func reverse(prev *ListNode, k int) *ListNode{
+       last := prev
+       for i := 0; i < k + 1; i++ {
+           last = last.Next
+           if i != k && last == nil {
+               return nil
+           }
+       }
+       tail := prev.Next
+       cur := prev.Next.Next
+       for (cur != last) {
+           next := cur.Next
+           cur.Next = prev.Next
+           prev.Next = cur
+           tail.Next = next
+           cur = next
+       }
+       return tail
+   }
    ```
 
 5. 环形链表（判断是否有环） 
     思路：用到快慢指针，快慢指针首先指向头结点
+    
     ```
     slow := head
     fast := head
@@ -151,6 +159,7 @@ func reverse(prev *ListNode, k int) *ListNode{
 6. 环形链表 （判断环的入口）
     思路：同4，首先判断有没有环，如果有环，输出第一次meet的Node
     然后找到环中结点的个数loopCnt
+    
     ```
     node := meetingNode(head)
     if node == nil {
@@ -163,6 +172,7 @@ func reverse(prev *ListNode, k int) *ListNode{
         loopCnt++
     }
     ```
+    
     接着用两个指针p1、p2指向head节点，p1先向前进loopCnt步，接着p1和p2同时向前遍历，当第二个指针指向环的入口结点的时候，第一个指针已经围绕着环走了一圈，也回到了环的入口结点，因为两个结点相遇，这个节点就是入环的结点
 
 ```
