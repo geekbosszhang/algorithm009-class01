@@ -40,8 +40,10 @@
     return prev
     ```                                                                                                                                                                                                     
 3. 两两交换链表
-   思路：head -> 1 -> 2 -> 3 -> 4
-   p - head, cur - 1,
+
+   思路1：
+      head -> 1 -> 2 -> 3 -> 4
+      p - head, cur - 1,
    * step 1. p.next = cur.next  (head -> 2)
    * step 2. cur.next = cur.next.next (1 -> 3)
    * step 3. p.next.next = cur (2 -> 1)
@@ -103,7 +105,7 @@
    cur = next
    ```
    
-```
+ ```
    func reverseKGroup(head *ListNode, k int) *ListNode {
     if head == nil {
         return nil
