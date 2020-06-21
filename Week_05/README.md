@@ -961,21 +961,153 @@ func solve(index int, nums []int, cur []int, res *[][]int) {
  *Hash*
  
  1. Two sum
+ 
+ ```
+  func twoSum(nums []int, target int) (res []int) {
+    hashMap := map[int]int{}
+    for i, v := range nums {
+        expected := target - v
+        if _, ok := hashMap[expected]; ok {
+            res = append(res, hashMap[expected])
+            res = append(res, i)
+        }
+        hashMap[v] = i
+    }
+    return res
+}
+```
  2. 异位词
  
  *Stack*
  1. valid parentheses
+
+思路是如果左括号，右括号入栈，遇到右括号，如果栈为空或者栈顶出栈元素不是当前右括号，则表示为不合法的括号，最后检查stack是否为空
+ 
+ ```
+ func isValid(s string) bool {
+    if len(s) % 2 != 0 {
+        return false
+    }
+    stack := []string{}
+    for _, v := range s {
+        if string(v) == "(" {
+            stack = append(stack, ")")
+        } else if string(v) == "[" {
+            stack = append(stack, "]")
+        } else if string(v) == "{" {
+            stack = append(stack, "}")
+        } else {
+            if len(stack) < 1 {
+                return false
+            }
+            top := stack[len(stack)-1]
+            if top == string(v) {
+                stack = stack[:len(stack)-1]
+            } else {
+                return false
+            }
+        }
+    }
+    return len(stack) == 0
+}
+ ```
  2. min stack
+ 
+ ```
+ func (this *MinStack) Push(x int)  {
+    this.stack = append(this.stack, x)
+    top := this.minStack[len(this.minStack)-1]
+    this.minStack = append(this.minStack, min(x, top))
+}
+
+func (this *MinStack) Pop()  {
+    this.stack = this.stack[:len(this.stack)-1]
+    this.minStack = this.minStack[:len(this.minStack)-1]
+}
+
+func (this *MinStack) Top() int {
+    return this.stack[len(this.stack)-1]
+}
+
+func (this *MinStack) GetMin() int {
+    return this.minStack[len(this.minStack)-1]
+}
+ ```
  3. trapping rain water
+ 
+思路是设置左右两边指针，设置leftMax和rightMax为0，让左右两边指针相遇
+
+如果左指针高度小于右边，则计算左指针能装多少水，以更低的那边为bar去计算
+先更新当前指针与当前max谁最高，用最大高度减去当前高度，求出长的水数量
+
+res += Math.Max(leftMax, height[left]) - height[left]
+
+反之计算右边指针能装多少水
+缩小左右指针范围直到相遇
+
  4. largest rectangles in histogram
+ 
+核心是找左右边界
  
  *Queue*
  1. Sliding window Maximum
+ 
+ 思路一两重循环
+ 思路二双端队列 deque
+ 思路三维护一个单调队列
+ 
+ 
  2. 循环队列
  
  *Array*
  1. Two sum
+ 
  2. Three sum
+ 
+ 思路是先排序
+ 遍历数组从0到倒数第三位
+ 用双指针，左指针为从当前数字的最右边一位，右指针为为数组的最右边，向中间夹逼，来寻找是否为0
+ 最重要的是要去重
+ ```
+ func threeSum(nums []int) (res [][]int) {
+    if len(nums) < 3 {
+        return nil
+    }
+    // sort nums
+    sort.Ints(nums)
+    for k:= 0; k < len(nums) - 2; k++ {
+        l := k+1
+        r := len(nums) - 1
+        if nums[k] > 0 || nums[k] + nums[l] > 0 {
+            break
+        }
+        // skip duplicate k
+        if k > 0 && nums[k] == nums[k-1] {
+            continue
+        }
+        for l < r {
+            if nums[k] + nums[l] + nums[r] > 0 {
+                r--
+            } else if nums[k] + nums[l] + nums[r] < 0 {
+                l++
+            } else {
+                res = append(res, []int{nums[k], nums[l], nums[r]})
+                l++
+                r--
+                // skip duplicate value
+                for l < r && nums[l] == nums[l-1] {
+                    l++
+                }
+                // skip duplicate value
+                for l < r && nums[r] == nums[r+1] {
+                    r--
+                }
+            }
+        }
+    }
+    return res
+}
+ ```
  3. Remove duplicates from sorted array
  4. Merge sorted array
  5. 移动0到数组最后
