@@ -1047,14 +1047,87 @@ res += Math.Max(leftMax, height[left]) - height[left]
 
  4. largest rectangles in histogram
  
-核心是找左右边界
+思路一：暴力求解，核心是找左右边界， 遍历每个柱子，以当前柱子i的高度为矩形的高，向左找到第一个高度小于当前柱体i的柱体，向右找到第一个高度小于当前柱体的柱体，对于每个柱子算一个矩形面积，最终比较出较大的面就
+```
+for i, v := range heights {
+        left := i
+        right := i
+        j := i-1
+        for ; j >= 0 ;j-- {
+            // Find first element in the left that less than current height
+            if heights[j] < v {
+                break
+            }
+        }
+        left = j
+        k := i+1
+        for ; k < len(heights); k++ {
+            // Find first element in the right that less than current height
+            if heights[k] < v {
+                break
+            }
+        }
+        right = k
+        area := v * (right - left - 1)
+        if area > maxArea {
+            maxArea = area
+        }
+    }
+```
+
+思路二：是用单调栈
  
  *Queue*
  1. Sliding window Maximum
  
  思路一两重循环
+ 
+ ```
+ func maxSlidingWindow1(nums []int, k int) (res []int) {
+    arrLen := len(nums)
+    for i := 0; i < arrLen - (k - 1); i++ {
+        max := nums[i]
+        for j := i + 1; j < i + k; j++ {
+            if nums[j] > max {
+                max = nums[j]
+            }
+        }
+        res = append(res, max)
+    }
+    return
+}
+ ```
  思路二双端队列 deque
+ 在双端队列中保存下标， 双端队列的头总是保存最大的那个数 时间复杂度为O(nk)
  思路三维护一个单调队列
+ 
+ ```
+ // 维护一个单调递减的队列,队列中保存对应元素的index
+func maxSlidingWindow3(nums []int, k int) []int {
+	if len(nums) == 0 {
+		return nil
+	}
+	var Q = make([]int, 0, len(nums))
+	res := make([]int, len(nums)-k+1)
+	for i := 0; i < len(nums); i++ {
+		for len(Q) != 0 && nums[i] >= nums[Q[len(Q)-1]] {
+			Q = Q[:len(Q)-1]
+		}
+		// 当前元素入栈
+		Q = append(Q, i)
+
+		// 窗口离开first元素时，栈中第一个元素出栈
+		if Q[0] == i-k {
+			Q = Q[1:]
+		}
+		// 窗口中满了k个数
+		if i+1-k >= 0 {
+			res[i+1-k] = nums[Q[0]]
+		}
+	}
+	return res
+}
+ ```
  
  
  2. 循环队列
@@ -1109,11 +1182,145 @@ res += Math.Max(leftMax, height[left]) - height[left]
 }
  ```
  3. Remove duplicates from sorted array
+ 
+ ```
+ func removeDuplicates(nums []int) int {
+    arrLen := len(nums)
+    if arrLen <= 1 {
+        return arrLen
+    }
+    i := 0
+    for j := 1; j < arrLen; j++ {
+        if nums[j] != nums[i] {
+            i++
+            nums[i] = nums[j]
+        }
+    }
+    return i + 1
+}
+ ```
+ 
  4. Merge sorted array
+ 
+ 假设是num1有足够的空间能够保存nums2中的元素
+ ```
+ func merge(nums1 []int, m int, nums2 []int, n int)  {
+    aMaxIndex := m - 1
+    bMaxIndex := n - 1
+    mergeMaxIndex := m + n - 1
+    for aMaxIndex >= 0 && bMaxIndex >= 0 {
+        if nums1[aMaxIndex] > nums2[bMaxIndex] {
+            nums1[mergeMaxIndex] = nums1[aMaxIndex]
+            aMaxIndex--         
+        } else {
+            nums1[mergeMaxIndex] = nums2[bMaxIndex]
+            bMaxIndex--
+        }
+        mergeMaxIndex--
+    }
+    for bMaxIndex >= 0 {
+        nums1[mergeMaxIndex] = nums2[bMaxIndex]
+        bMaxIndex--
+        mergeMaxIndex--
+    }
+    return
+}
+ ```
  5. 移动0到数组最后
+ 
+ 思路：一个变量j记录非0下标，遇到非0则交换，默认j跟着i走，一旦遇到0，j就会停在0所在的索引，一旦遇到非0则会互相交换位置，然后++j
+ ```
+ func moveZeroes(nums []int)  {
+    if len(nums) < 1 {
+        return
+    }
+    j := 0
+    for i := 0; i < len(nums); i++ {
+        if nums[i] != 0 {
+            nums[j] = nums[i]
+	    // Note here !!!!
+            if i != j {
+                nums[i] = 0
+            }
+            j++
+        }
+    }
+    return 
+}
+ ```
+ 
  6. Intersection of two arrays
+ 
+ 思路 采用两个HashMap， 是否能够更优？
+ ```
+ func intersection(nums1 []int, nums2 []int) []int {
+    hashMap1 := make(map[int]bool, 0)
+    hashMap2 := make(map[int]bool, 0)
+    res := make([]int, 0)
+    for _, v1 := range nums1 {
+        hashMap1[v1] = true
+    }
+    for _, v2 := range nums2 {
+        hashMap2[v2] = true
+    }
+    for value, _ := range hashMap1 {
+        if _, ok := hashMap2[value]; ok {
+            res = append(res, value)
+        }
+    }
+    
+    return res
+}
+ ```
  7. 装水最多的水桶
+ 
+思路：双指针法 - 左右收敛法
+左右边界是i,j, 向中间收敛，谁高度小谁就往里挪，要找最短板的
+ ```
+ func maxArea(height []int) int {
+    left := 0
+    right := len(height) - 1
+    maxArea := 0
+    for left < right {
+        var h int
+        distance := right - left
+        if height[left] < height[right] {
+            h = height[left]
+            left++
+        } else {
+            h = height[right]
+            right--
+        }
+        area := distance * h
+        if area  > maxArea {
+            maxArea = area
+        }
+    }
+    return maxArea
+}
+ ```
  8. Plus one
+ 
+ 从尾到头检查+1是否小于10， 小于则立即return
+ 否则当前索引设置为0， --当前索引
+ 如果循环完了数组，并且没有在循环中return，说明当前数组项都为0
+ 返回一个新开辟的数组，数组第一个设为1
+ 
+ ```
+ func plusOne(digits []int) []int {
+    arrLen := len(digits)
+    for i := arrLen - 1; i >= 0; i-- {
+        digits[i]++
+        digits[i] = digits[i] % 10
+        if digits[i] != 0 {
+            return digits
+        }
+    }
+    res := make([]int, arrLen + 1)
+    res[0] = 1
+    return res
+}
+ ```
  9. Rotate Array
  10. Matrix
  
